@@ -1,0 +1,31 @@
+html {
+  background-color: #222;
+}
+
+main {
+  width: 90%;
+  height: 100%;
+  background-color: #eeeeee;
+  display: block;
+  margin: 0 auto;
+  padding: 24px;
+  margin-top: 10px;
+}
+
+main h2 {
+  font-size: 32px;
+  padding: .5em 0;
+  font-family: Arial;
+}
+
+main h4 {
+  padding: 0 0 0.5em;
+  font-size: 20px;
+}
+
+main p {
+  padding: 0 1em 1em;
+  font-size: 18px;
+  text-align: justify;
+  line-height: 1.5em;
+}
