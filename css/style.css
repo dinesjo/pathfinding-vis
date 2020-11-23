@@ -44,12 +44,22 @@ nav h1 {
 nav select {
   width: 20%;
   height: 36px;
-  background-color: #222;
-  color: #fff;
+  background-color: #222222;
+  color: #ffffff;
   text-align: center;
   font-size: 18px;
   padding: 4px;
 }
+
+nav button {
+  width: 5%;
+  height: 36px;
+  background-color: #222222;
+  color: #ffffff;
+  border-style: solid;
+  border: 1px solid #767676;
+}
+
 
 table {
   border-collapse: collapse; /* avoid double borders */
@@ -57,16 +67,26 @@ table {
   flex-direction: column;
 }
 
-
-table td {
+td {
   background-color: #e8e8e8;
   border: 1px solid #888;
   width: 40px;
   height: 40px;
+  transition: background ease 200ms;
+  user-select: none;
+}
+
+td:hover {
+  transition: background ease-out 100ms;
+  background-color: #c8c8c8;
 }
 
 .visited {
   background-color: #e0d536;
+}
+
+.tail {
+  background-color: #3210ac;
 }
 
 .start {

@@ -14,6 +14,7 @@ class Node {
     this.cameFrom = undefined; // coords for use in pathfinding
   }
 
+
   addClass(c) {
     document.getElementsByClassName(`_${this.row}-${this.col}`)[0].classList.add(c);
   }
@@ -34,6 +35,11 @@ class Node {
   makeWall() {
     this.type = "wall";
     this.addClass("wall");
+  }
+
+  makeNormal() {
+    this.type = "normal";
+    document.getElementsByClassName(`_${this.row}-${this.col}`)[0].classList.remove("wall");
   }
 
   setnbrs() {
@@ -68,80 +74,76 @@ function handleClick(row, col) {
     nodes[row][col].makeEnd();
     endExists = true;
   } else {
-    nodes[row][col].makeWall();
+    if (nodes[row][col].type == "normal") {
+      nodes[row][col].makeWall();
+    } else {
+      nodes[row][col].makeNormal();
+    }
   }
 }
 
+// Animation testing
+// var request;
+
+// function performAnimation(curNode) {
+//   request = requestAnimationFrame(performAnimation);
+//   console.log("TESTING");
+// }
 
 function runDijkstras(nodes) {
-  /**
-   * pseudocode
-   * 
-   * while not found:
-   * curNode = node with type start
-   * if curNode is end:
-   *  nice
-   * else:
-   *  calc d to nbrs
-   *  log them
-   *  choose lowest d as curNode
-   */
+  // Make sure start and end exist
   if (startNode == undefined | endNode == undefined) {
-    return "Select a start and an end node!";
+    console.log("Select a start and an end node!")
+    return;
   }
 
-
+  // Remove walls
   let allNodesIncWalls = [];
-  for (let i = 0; i < nodes.length; i++) {
-    nodes[i].forEach(node => {
+  nodes.forEach(nodeRow => {
+    nodeRow.forEach(node => {
       allNodesIncWalls.push(node);
     })
-  }
-
-  availNodes = allNodesIncWalls.filter(node => {
-    // Remove all walls from array
+  })
+  let availNodes = allNodesIncWalls.filter(node => {
     return node.type != "wall";
   })
 
+  // Set nbrs
   availNodes.forEach(node => {
     node.setnbrs();
   });
 
-  console.log(availNodes);
-
-  let curNode = startNode;
-  let i = 0; // while in development phase to controll
-  while (availNodes.length > 0 && i < 10001) {
+  let i = 0; // while in development phase to limit crashes
+  let curNode;
+  while (availNodes.length > 0 && i < 50001) {
+    // Check if ended
     if (curNode === endNode) {
-      console.log("FOUND");
+      // Visualise with "breadcrumbs"
+      let cameFromNode = curNode;
+      while (cameFromNode != startNode) {
+        cameFromNode.addClass("tail");
+        cameFromNode = cameFromNode.cameFrom;
+      }
+
       break;
     }
 
+    // Sort nodes by distance
     availNodes.sort((a, b) => a.distance - b.distance);
-    curNode = availNodes[0]; // curNode is lowest distance
-    availNodes.splice(0, 1); // remove curNode
+    curNode = availNodes[0]; // set curNode to lowest distance
+    availNodes.splice(0, 1); // remove curNode from array
 
+    // Update each nbr
     curNode.nbrs.forEach(nbr => {
-      if (availNodes.includes(nbr)) {
-        // Update distance for all nbrs 
+      if (availNodes.includes(nbr)) { // only if nbr isnt already visited
+        // Update distance for nbr
         nbr.distance = curNode.distance + getDistance(curNode, nbr);
-        if (curNode != endNode) {
-          nbr.addClass("visited");
-        }
+        nbr.cameFrom = curNode;
       }
     });
 
+    curNode.addClass("visited");
     i++;
-  }
-}
-
-
-// Unused rn
-function wait(ms) {
-  let start = new Date().getTime();
-  let end = start;
-  while (end < start + ms) {
-    end = new Date().getTime();
   }
 }
 
@@ -149,8 +151,7 @@ function wait(ms) {
 function getDistance(node1, node2) {
   let [x1, y1] = node1.pos;
   let [x2, y2] = node2.pos;
-  let d = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  return d;
+  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
 
@@ -161,7 +162,7 @@ cols = 25;
 let HTMLCode;
 let curNodeRow = [];
 for (let row = 0; row < rows; row++) {
-  curNodeRow = []; // empty array
+  curNodeRow = [];
   HTMLCode = "<tr>";
   for (let col = 0; col < cols; col++) {
     HTMLCode += `<td onclick=(handleClick(${row},${col})) class='_${row}-${col}'></td>\n`;
