@@ -41,25 +41,34 @@ nav h1 {
   font-size: 32px;
 }
 
-nav select {
-  width: 20%;
-  height: 36px;
-  background-color: #222222;
-  color: #ffffff;
-  text-align: center;
-  font-size: 18px;
-  padding: 4px;
-}
-
 nav button {
-  width: 5%;
+  transition: transform 200ms ease;
+  font-weight: bold;
+  padding: 0 1em 0;
   height: 36px;
-  background-color: #222222;
-  color: #ffffff;
-  border-style: solid;
   border: 1px solid #767676;
+  border-top-left-radius: 6px;
+  font-size: 15px;
 }
 
+nav button:nth-of-type(1) {
+  background-color: #862323;
+  color: #f8f8f8;
+}
+
+nav button:nth-of-type(2) {
+  background-color: #007033;
+  color: #f8f8f8;
+}
+
+nav button:hover {
+  transform: scale(1.125);
+}
+
+nav .curAlgorithm {
+  width: 80px;
+  font-size: 18px;
+}
 
 table {
   border-collapse: collapse; /* avoid double borders */
@@ -82,7 +91,7 @@ td:hover {
 }
 
 .visited {
-  background-color: #e0d536;
+  background-color: #e0c500c8;
 }
 
 .tail {
@@ -90,7 +99,7 @@ td:hover {
 }
 
 .start {
-  background-color: #238679;
+  background-color: #007033;
 }
 
 .end {

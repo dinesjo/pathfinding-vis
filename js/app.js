@@ -22,7 +22,7 @@ class Node {
   makeStart() {
     startNode = this;
     this.type = "start";
-    this.distance = 0; // start pathfinding at lowest distance
+    this.distance = 0; // start at lowest distance
     this.addClass("start");
   }
 
@@ -55,7 +55,7 @@ class Node {
         this.nbrs.push(undefined);
       }
     }
-    // Filter out any non-existant nbrs
+    // Filter out "ghost" nbrs
     let filtered = this.nbrs.filter(element => {
       return element !== undefined;
     });
@@ -74,7 +74,8 @@ function handleClick(row, col) {
     nodes[row][col].makeEnd();
     endExists = true;
   } else {
-    if (nodes[row][col].type == "normal") {
+    // toggle wall
+    if (nodes[row][col].type === "normal") {
       nodes[row][col].makeWall();
     } else {
       nodes[row][col].makeNormal();
@@ -82,60 +83,57 @@ function handleClick(row, col) {
   }
 }
 
-// Animation testing
-// var request;
-
-// function performAnimation(curNode) {
-//   request = requestAnimationFrame(performAnimation);
-//   console.log("TESTING");
-// }
-
-function runDijkstras(nodes) {
-  // Make sure start and end exist
-  if (startNode == undefined | endNode == undefined) {
-    console.log("Select a start and an end node!")
-    return;
-  }
-
-  // Remove walls
+function getAvailNodes(nodes) {
+  // Make list with all nodes
   let allNodesIncWalls = [];
   nodes.forEach(nodeRow => {
     nodeRow.forEach(node => {
       allNodesIncWalls.push(node);
     })
   })
-  let availNodes = allNodesIncWalls.filter(node => {
+  // Return list without walls
+  return allNodesIncWalls.filter(node => {
     return node.type != "wall";
   })
+}
 
-  // Set nbrs
+function runDijkstras(nodes) {
+  // Make sure start and end exist
+  if (startNode == undefined | endNode == undefined) {
+    alert("Select a start and an end node!");
+    return;
+  }
+
+  let availNodes = getAvailNodes(nodes);
+
+  // Call set nbrs
   availNodes.forEach(node => {
     node.setnbrs();
   });
 
-  let i = 0; // while in development phase to limit crashes
   let curNode;
-  while (availNodes.length > 0 && i < 50001) {
-    // Check if ended
+  while (availNodes.length > 0) {
+    // If ended
     if (curNode === endNode) {
       // Visualise with "breadcrumbs"
-      let cameFromNode = curNode;
-      while (cameFromNode != startNode) {
-        cameFromNode.addClass("tail");
-        cameFromNode = cameFromNode.cameFrom;
+      let workingNode = endNode;
+
+      while (workingNode != startNode) {
+        // Add class and get its cameFrom node
+        workingNode.addClass("tail");
+        workingNode = workingNode.cameFrom;
       }
 
       break;
     }
 
-    // Sort nodes by distance
-    availNodes.sort((a, b) => a.distance - b.distance);
+    availNodes.sort((a, b) => a.distance - b.distance); // sort nodes by distance
     curNode = availNodes[0]; // set curNode to lowest distance
-    availNodes.splice(0, 1); // remove curNode from array
+    availNodes.splice(0, 1); // remove previous node from array
 
     // Update each nbr
     curNode.nbrs.forEach(nbr => {
-      if (availNodes.includes(nbr)) { // only if nbr isnt already visited
+      if (availNodes.includes(nbr)) { // only if nbr is valud
         // Update distance for nbr
         nbr.distance = curNode.distance + getDistance(curNode, nbr);
         nbr.cameFrom = curNode;
@@ -143,10 +141,24 @@ function runDijkstras(nodes) {
     });
 
     curNode.addClass("visited");
-    i++;
   }
 }
 
+function runAStar(nodes) {
+
+}
+
+function runSelectedAlgorithm() {
+  const selectedAlgorithm = document.getElementsByClassName("curAlgorithm")[0];
+  switch (selectedAlgorithm.innerHTML) {
+    case "Dijkstra's":
+      runDijkstras(nodes);
+      break;
+    case "A*":
+      runAStar(nodes);
+      break;
+  }
+}
 
 function getDistance(node1, node2) {
   let [x1, y1] = node1.pos;
@@ -154,6 +166,17 @@ function getDistance(node1, node2) {
   return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
+function changeAlgorithm() {
+  const curAlgorithm = document.getElementsByClassName("curAlgorithm")[0];
+  switch (curAlgorithm.innerHTML) {
+    case "Dijkstra's":
+      curAlgorithm.innerHTML = "A*";
+      break;
+    case "A*":
+      curAlgorithm.innerHTML = "Dijkstra's";
+      break;
+  }
+}
 
 // Create table and nodes
 const HTMLTABLE = document.querySelector("table");
@@ -173,7 +196,3 @@ for (let row = 0; row < rows; row++) {
 
   nodes.push(curNodeRow);
 }
-
-
-// Identify cells by coordinates
-// document.getElementsByClassName("_1-1")[0].classList.add("visited");
