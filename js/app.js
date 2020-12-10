@@ -47,23 +47,20 @@ class Node {
   }
 
   setnbrs() {
-    for (let i = -1; i <= 1; i += 2) {
-      try {
-        this.nbrs.push(nodes[this.x][this.y + i]);
-      } catch (TypeError) {
-        this.nbrs.push(undefined);
-      }
-      try {
-        this.nbrs.push(nodes[this.x + i][this.y]);
-      } catch (TypeError) {
-        this.nbrs.push(undefined);
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        if (!(i === 0 && j === 0)) {
+          try {
+            this.nbrs.push(nodes[this.x + i][this.y + j]);
+          } catch (TypeError) {
+
+          }
+        }
       }
     }
-    // Filter out "ghost" nbrs
-    let filtered = this.nbrs.filter(element => {
-      return element !== undefined;
-    });
-    this.nbrs = filtered;
+    this.nbrs = this.nbrs.filter(el => { // remove "ghost" nodes
+      return el !== undefined;
+    })
   }
 }
 
@@ -88,7 +85,7 @@ function handleClick(x, y) {
 }
 
 function getAvailNodes(arr) {
-  // Make list with all nodes
+  // Make list with ALL nodes
   let allNodesIncWalls = [];
   arr.forEach(nodeRow => {
     nodeRow.forEach(node => {
@@ -120,6 +117,7 @@ function runPathfinding(nodes) {
   let curNode;
   let provisionalgDistance;
   while (openSet.length > 0) {
+    // Get node with lowest distance
     curNode = getLowestDistance(openSet);
 
     if (curNode === endNode) {
@@ -128,26 +126,32 @@ function runPathfinding(nodes) {
       break;
     }
 
-    // Remove curNode from openSet
+    // Add curNode to closedSet and remove from openSet
     closedSet.push(curNode);
     openSet = openSet.filter(node => {
       return node != curNode;
     });
 
-    // Update each nbr
+    // Update each nbrs distance
     curNode.nbrs.forEach(nbr => {
       if (!closedSet.includes(nbr)) { // if not already considerd
         // Update distances
         if (selectedAlgorithm === "Dijkstra's") {
           // Use Dijkstra's
-          nbr.cameFrom = curNode;
-          nbr.fDistance = curNode.fDistance + getDistance(curNode, nbr);
-          nbr.fDistance = getDistance(nbr, startNode);
-          openSet.push(nbr);
+          // fDistance represents distnace to start in order to
+          // still use getLowestDistance function
+          provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr);
+          if (!(openSet.includes(nbr)) || provisionalfDistance < nbr.fDistance) {
+            nbr.cameFrom = curNode;
+            nbr.fDistance = provisionalfDistance;
+          }
+          if (!(openSet.includes(nbr))) {
+            openSet.push(nbr);
+          }
           nbr.addClass("considered"); // CSS
         } else {
           // Use A*
-          provisionalgDistance = curNode.gDistance + getDistance(curNode, nbr);
+          provisionalgDistance = curNode.gDistance + getEuclideanDistance(curNode, nbr);
           if (!(openSet.includes(nbr)) || provisionalgDistance < nbr.gDistance) {
             nbr.cameFrom = curNode;
             nbr.gDistance = provisionalgDistance;
@@ -167,8 +171,10 @@ function runPathfinding(nodes) {
 }
 
 function getLowestDistance(arr) {
-  // Returns node with lowers f-cost, if two are equal choose closest to
+  // Returns node with lowers f-cost, 
+  // if two are equal choose closest to
   // end by Euclidean distance
+
   let lowestyet = arr[0];
   arr.forEach(node => {
     if (node.fDistance === lowestyet.fDistance) {
@@ -186,19 +192,20 @@ function getLowestDistance(arr) {
 }
 
 function visualiseCameFrom(latestNode) {
-  // Visualise a tail from end to finish by CSS
+  // Visualise a tail from end to finish with CSS
+
   let workingNode = latestNode;
 
   while (workingNode != startNode) {
-    // Add class and get its cameFrom node
-    workingNode.addClass("tail");
-    workingNode = workingNode.cameFrom;
+    workingNode.addClass("tail"); // CSS
+    workingNode = workingNode.cameFrom; // get its cameFrom
   }
 }
 
 
 function getDistance(node1, node2) {
   // Return distance in manhattan measurement
+
   let [x1, y1] = node1.pos;
   let [x2, y2] = node2.pos;
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
@@ -206,6 +213,7 @@ function getDistance(node1, node2) {
 
 function getEuclideanDistance(node1, node2) {
   // Return distance in Euclidean measurement
+
   let [x1, y1] = node1.pos;
   let [x2, y2] = node2.pos;
   return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
@@ -216,7 +224,8 @@ var selectedAlgorithm = "Dijkstra's";
 
 function changeAlgorithm() {
   // Change algorithm and refresh display
-  const curAlgorithm = document.getElementsByClassName("curAlgorithm")[0];
+
+  const curAlgorithm = document.getElementById("changeAlgorithm");
 
   switch (curAlgorithm.innerHTML) {
     case "Dijkstra's":
@@ -227,15 +236,16 @@ function changeAlgorithm() {
       break;
   }
   // Update display
+  document.querySelectorAll("button")[2].innerHTML = selectedAlgorithm;
   curAlgorithm.innerHTML = selectedAlgorithm;
 }
 
 
 
-// Create table
+// Create HTML table with all cells that represent nodes
 const HTMLTABLE = document.querySelector("table");
-width = 60;
-height = 25;
+width = window.innerWidth / 30;
+height = (window.innerHeight - 86) / 30; // minus nav height
 let HTMLCode;
 for (let y = 0; y < height; y++) {
   HTMLCode = "<tr>";

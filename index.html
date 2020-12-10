@@ -14,10 +14,13 @@
       <h1>Visualisering: Sökalgoritmer</h1>
       <a href="about.html">Hur fungerar algoritmen?</a>
     </div>
-    <button onclick="location.reload();">Clear</button>
-    <button onclick="runPathfinding(nodes);">Run</button>
-    <button onclick="changeAlgorithm();">Change Algorithm</button>
-    <h4 class="curAlgorithm">Dijkstra's</h6>
+    <button id="clear" onclick="location.reload();">Clear</button>
+    <button id="run" onclick="runPathfinding(nodes);">Run</button>
+
+    <div class="changeAlgorithmContainer">
+      <h2>Select algorithm:</h2>
+      <button id="changeAlgorithm" onclick="changeAlgorithm();">Dijkstra's</button>
+    </div>
 
   </nav>
   <main>
