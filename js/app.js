@@ -245,7 +245,7 @@ function changeAlgorithm() {
 // Create HTML table with all cells that represent nodes
 const HTMLTABLE = document.querySelector("table");
 width = window.innerWidth / 30;
-height = (window.innerHeight - 86) / 30; // minus nav height
+height = (window.innerHeight - 180) / 30; // minus nav height
 let HTMLCode;
 for (let y = 0; y < height; y++) {
   HTMLCode = "<tr>";
