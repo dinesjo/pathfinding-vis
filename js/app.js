@@ -1,6 +1,42 @@
 var nodes = [];
 var startNode;
 var endNode;
+var startExists = false;
+var endExists = false;
+
+var strokeID = 0;
+var erasing = false;
+
+function handleMousemove(event) {
+  let c = event.target.classList[0].split("_").pop().split("-");
+  nodes[Number(c[0])][Number(c[1])].handleDraw(strokeID);
+}
+
+document.querySelector("table").addEventListener("mousedown", (event) => {
+  strokeID++;
+  if (event.shiftKey) {
+    // Erase
+    erasing = true;
+    document.addEventListener("mousemove", handleMousemove);
+  } else if (event.altKey) {
+    // Start / End
+    let c = event.target.classList[0].split("_").pop().split("-");
+    if (!startExists) {
+      nodes[Number(c[0])][Number(c[1])].makeStart();
+      startExists = true;
+    } else if (!endExists) {
+      nodes[Number(c[0])][Number(c[1])].makeEnd();
+      endExists = true;
+    }
+  } else {
+    // Draw Walls
+    erasing = false;
+    document.addEventListener("mousemove", handleMousemove);
+  }
+});
+document.addEventListener("mouseup", () => {
+  document.removeEventListener("mousemove", handleMousemove);
+});
 
 
 class Node {
@@ -14,6 +50,7 @@ class Node {
     this.gDistance = Infinity;
     this.hDistance = Infinity;
     this.cameFrom = undefined; // coords for use in pathfinding
+    this.usedStrokeIDs = [];
   }
 
 
@@ -46,7 +83,7 @@ class Node {
     document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("wall");
   }
 
-  setnbrs() {
+  setNbrs() {
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         if (!(i === 0 && j === 0)) {
@@ -62,27 +99,19 @@ class Node {
       return el !== undefined;
     })
   }
-}
 
-var startExists = false;
-var endExists = false;
-
-function handleClick(x, y) {
-  if (!startExists) {
-    nodes[x][y].makeStart();
-    startExists = true;
-  } else if (!endExists) {
-    nodes[x][y].makeEnd();
-    endExists = true;
-  } else {
-    // Toggle wall
-    if (nodes[x][y].type === "normal") {
-      nodes[x][y].makeWall();
-    } else {
-      nodes[x][y].makeNormal();
+  handleDraw(ID) {
+    if (!(this.usedStrokeIDs.includes(ID))) {
+      this.usedStrokeIDs.push(ID);
+      if (erasing && this.type === "wall") {
+        this.makeNormal();
+      } else if (!(erasing)) {
+        this.makeWall();
+      }
     }
   }
 }
+
 
 function getAvailNodes(arr) {
   // Make list with ALL nodes
@@ -98,6 +127,12 @@ function getAvailNodes(arr) {
   })
 }
 
+var openSet = [];
+var closedSet = [];
+var curNode;
+var id;
+var intervalTime = 0; // in milliseconds, 0 = real time
+
 function runPathfinding(nodes) {
   // Make sure start and end exist
   if (startNode == undefined || endNode == undefined) {
@@ -105,70 +140,98 @@ function runPathfinding(nodes) {
     return;
   }
 
-  let openSet = getAvailNodes(nodes);
-
-  // Call set nbrs
-  openSet.forEach(node => {
-    node.setnbrs();
+  // Call setNbrs for all available nodes
+  getAvailNodes(nodes).forEach(node => {
+    node.setNbrs();
   });
 
   openSet = [startNode];
-  let closedSet = [];
-  let curNode;
-  let provisionalgDistance;
-  while (openSet.length > 0) {
-    // Get node with lowest distance
-    curNode = getLowestDistance(openSet);
+  closedSet = [];
+  curNode = getLowestDistance(openSet);
 
-    if (curNode === endNode) {
-      // If ended, visualise with "breadcrumbs"
-      visualiseCameFrom(curNode);
+  switch (selectedAlgorithm) {
+    case "A*":
+      id = setInterval(runAstarOnce, intervalTime);
       break;
-    }
 
-    // Add curNode to closedSet and remove from openSet
-    closedSet.push(curNode);
-    openSet = openSet.filter(node => {
-      return node != curNode;
-    });
-
-    // Update each nbrs distance
-    curNode.nbrs.forEach(nbr => {
-      if (!closedSet.includes(nbr)) { // if not already considerd
-        // Update distances
-        if (selectedAlgorithm === "Dijkstra's") {
-          // Use Dijkstra's
-          // fDistance represents distnace to start in order to
-          // still use getLowestDistance function
-          provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr);
-          if (!(openSet.includes(nbr)) || provisionalfDistance < nbr.fDistance) {
-            nbr.cameFrom = curNode;
-            nbr.fDistance = provisionalfDistance;
-          }
-          if (!(openSet.includes(nbr))) {
-            openSet.push(nbr);
-          }
-          nbr.addClass("considered"); // CSS
-        } else {
-          // Use A*
-          provisionalgDistance = curNode.gDistance + getEuclideanDistance(curNode, nbr);
-          if (!(openSet.includes(nbr)) || provisionalgDistance < nbr.gDistance) {
-            nbr.cameFrom = curNode;
-            nbr.gDistance = provisionalgDistance;
-            nbr.hDistance = getDistance(nbr, endNode);
-            nbr.fDistance = nbr.gDistance + nbr.hDistance;
-            if (!(openSet.includes(nbr))) {
-              openSet.push(nbr);
-            }
-            nbr.addClass("considered"); // CSS
-          }
-        }
-      }
-    });
-
-    curNode.addClass("visited"); // CSS
+    default:
+      id = setInterval(runDijkstraOnce, intervalTime);
+      break;
   }
 }
+
+function runDijkstraOnce() {
+  curNode = getLowestDistance(openSet);
+
+  if (curNode === endNode) {
+    // If ended, visualise with a tail
+    clearInterval(id);
+    visualiseCameFrom(curNode);
+  }
+
+  // Add curNode to closedSet and remove from openSet
+  closedSet.push(curNode);
+  openSet = openSet.filter(node => {
+    return node != curNode;
+  });
+
+  // Update nbr distances
+  curNode.nbrs.forEach(nbr => {
+    if (!(closedSet.includes(nbr))) { // if in consideration
+
+      // fDistance represents distance to start in order to
+      // still use getLowestDistance function
+      provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr);
+      if (!(openSet.includes(nbr)) || (provisionalfDistance < nbr.fDistance)) {
+        nbr.cameFrom = curNode;
+        nbr.fDistance = provisionalfDistance;
+      }
+      if (!(openSet.includes(nbr))) {
+        openSet.push(nbr);
+      }
+      nbr.addClass("considered"); // CSS
+    }
+  });
+
+  curNode.addClass("visited");
+}
+
+function runAstarOnce() {
+  curNode = getLowestDistance(openSet);
+
+  if (curNode === endNode) {
+    // If ended, visualise with a tail
+    clearInterval(id);
+    visualiseCameFrom(curNode);
+  }
+
+  // Add curNode to closedSet and remove from openSet
+  closedSet.push(curNode);
+  openSet = openSet.filter(node => {
+    return node != curNode;
+  });
+
+  // Update each nbrs distance
+  curNode.nbrs.forEach(nbr => {
+    if (!closedSet.includes(nbr)) { // if in consideration
+      
+      let provisionalgDistance = curNode.gDistance + getEuclideanDistance(curNode, nbr);
+      if (!(openSet.includes(nbr)) || provisionalgDistance < nbr.gDistance) {
+        nbr.cameFrom = curNode;
+        nbr.gDistance = provisionalgDistance;
+        nbr.hDistance = getDistance(nbr, endNode);
+        nbr.fDistance = nbr.gDistance + nbr.hDistance;
+        if (!(openSet.includes(nbr))) {
+          openSet.push(nbr);
+        }
+        nbr.addClass("considered"); // CSS
+      }
+    }
+  });
+
+  curNode.addClass("visited"); // CSS
+}
+
 
 function getLowestDistance(arr) {
   // Returns node with lowers f-cost, 
@@ -245,12 +308,12 @@ function changeAlgorithm() {
 // Create HTML table with all cells that represent nodes
 const HTMLTABLE = document.querySelector("table");
 width = window.innerWidth / 30;
-height = (window.innerHeight - 180) / 30; // minus nav height
+height = (window.innerHeight - 150) / 30; // minus nav height
 let HTMLCode;
 for (let y = 0; y < height; y++) {
   HTMLCode = "<tr>";
   for (let x = 0; x < width; x++) {
-    HTMLCode += `<td onclick=(handleClick(${x},${y})) class='_${x}-${y}'></td>\n`;
+    HTMLCode += `<td class='_${x}-${y}'></td>\n`;
   }
   HTMLCode += "</tr>";
   HTMLTABLE.innerHTML += HTMLCode;
