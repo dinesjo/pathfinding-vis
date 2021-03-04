@@ -11,14 +11,21 @@
 <body>
   <nav>
     <div class="title-container">
-      <h1>Pathfinding Visualisation</h1>
-      <a href="about.html">How do the algorithms work?</a>
+      <h1>Pathfinding Visualised</h1>
     </div>
-    <button id="clear" onclick="location.reload();">Clear</button>
-    <button id="run" onclick="runPathfinding(nodes);">Run</button>
+    <div class="instructions-container">
+      <h2>ALT + <img style="width: 18px;" src="imgs/mouse1.png"> to place <br><span class="green">START</span> & <span
+          class="red">END</span></h2>
+      <h2>Hold <img style="width: 18px;" src="imgs/mouse1.png"> to <br>add obstacles</h2>
+      <h2>Hold SHIFT +  <img style="width: 18px;" src="imgs/mouse1.png"> to remove obstacles</h2>
+    </div>
+    <div class="button-container">
+      <button id="clear" onclick="location.reload();">Clear</button>
+      <button id="run" onclick="runPathfinding(nodes);">Run</button>
+    </div>
 
     <div class="changeAlgorithmContainer">
-      <h2>Select algorithm:</h2>
+      <h2>Current algorithm:</h2>
       <button id="changeAlgorithm" onclick="changeAlgorithm();">Dijkstra's</button>
     </div>
 
@@ -27,7 +34,8 @@
     <table></table>
     <footer>
       <h2>Linus Dinesjö, </h2>
-      <h2>student at <span class="NTIGradient"><a href="https://www.ntigymnasiet.se/sodertorn/" target="_blank">NTI Södertörn</a></span></h2>
+      <h2>student at <span class="NTIGradient"><a href="https://www.ntigymnasiet.se/sodertorn/" target="_blank">NTI
+            Södertörn</a></span></h2>
     </footer>
   </main>
   <script src="js/app.js"></script>

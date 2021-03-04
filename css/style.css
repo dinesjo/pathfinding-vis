@@ -6,6 +6,8 @@
   box-sizing: border-box;
   font-family: "Open Sans", sans-serif;
   color: #e8e8e8;
+  font-weight: 400; /* fallback */
+  font-weight: normal;
 }
 
 a {
@@ -13,12 +15,14 @@ a {
 }
 
 nav {
+  /* ORIGINAl COLOR: #3660d3 */
   width: 100%;
   height: 90px;
-  background-color: #3660d3;
+  background-color: #485665;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
+  padding: 0 2.5%;
 }
 
 nav .title-container {
@@ -26,18 +30,59 @@ nav .title-container {
   flex-direction: column;
   justify-content: center;
   height: 100%;
-  width: 45%;
-}
-
-nav a {
-  color: #e1ffe6;
-  font-weight: bold;
-  font-size: 18px;
-  width: max-content;
+  text-align: center;
+  width: 15%;
+  background-color: #00000022;
 }
 
 nav h1 {
   font-size: 32px;
+  line-height: 1.2em;
+}
+
+.instructions-container {
+  display: flex;
+  width: 50%;
+  justify-content: space-evenly;
+  height: 100%;
+  align-items: center;
+}
+
+.instructions-container h2 {
+  background-color: #ffffff22;
+  height: 80%;
+  width: 30%;
+  text-align: center;
+  padding: 0.2rem;
+  font-weight: 500;
+}
+
+.instructions-container span {
+  padding: 0 0.3rem;
+}
+
+.instructions-container img {
+  margin: 0 4px;
+  position: relative;
+  top: 5px;
+}
+
+.instructions-container .green {
+  background-color: #007032d7;
+  font-weight: 600;
+  padding: 0 10px;
+}
+
+.instructions-container .red {
+  background-color: #862323d7;
+  font-weight: 600;
+  padding: 0 10px;
+}
+
+.button-container {
+  display: flex;
+  width: 15%;
+  justify-content: space-evenly;
 }
 
 nav button {
@@ -56,7 +101,7 @@ nav button:hover {
 }
 
 #clear {
-  background-color: #87afeb;
+  background-color: #00000077;
 }
 
 #run {
@@ -67,6 +112,7 @@ nav button:hover {
   display: flex;
   flex-direction: column;
   height: 80px;
+  width: 10%;
 }
 
 .changeAlgorithmContainer h2 {
@@ -76,8 +122,9 @@ nav button:hover {
 }
 
 #changeAlgorithm {
-  padding: .5rem 2rem;
+  padding: 0.5rem 2rem;
   width: 200px;
+  font-size: 22px;
 }
 
 main table {
@@ -87,22 +134,21 @@ main table {
 main td {
   background-color: #e8e8e8;
   border: 1px solid #888;
-  width: 30px;
-  height: 30px;
   user-select: none;
 }
 
 main td:hover {
-  animation-name: animation;
-  animation-duration: 180ms;
+  box-shadow: inset 0 0 4px 2px #808080;
+  /* animation-name: animation;
+  animation-duration: 200ms; */
   opacity: 0.8;
 }
 
-@keyframes animation{
+@keyframes animation {
   0% {
     transform: scale(1);
   }
-  40% {
+  50% {
     transform: scale(0.85);
   }
   100% {
@@ -137,8 +183,8 @@ main td:hover {
 footer {
   width: 100%;
   height: 36px;
-  background-color: #3660d3f8;
-  padding-left: .5rem;
+  background-color: #485665;
+  padding-left: 0.5rem;
 }
 
 footer h2 {
@@ -147,17 +193,32 @@ footer h2 {
 }
 
 .NTIGradient {
-  background: linear-gradient(45deg,#6c0fb3 0,#300d23 100%);
+  background: linear-gradient(45deg, #a96fd6 0, #cc75ab 100%);
   background-clip: inherit;
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
 }
 
-@media only screen and (max-width: 1000px) {
+.NTIGradient a {
+  font-weight: bold;
+}
+
+@media only screen and (max-width: 1300px) {
   nav h1 {
     font-size: 22px;
   }
-  nav a {
-    font-size: 14px;
+  .instructions-container h2 {
+    font-size: 16px;
+    line-height: 1.2em;
+  }
+  .instructions-container img {
+    height: 20px;
+  }
+  .button-container {
+    width: 10%;
+  }
+  .button-container button {
+    width: 40%;
+    text-align: center;
   }
 }

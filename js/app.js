@@ -131,7 +131,7 @@ var openSet = [];
 var closedSet = [];
 var curNode;
 var id;
-var intervalTime = 0; // in milliseconds, 0 = real time
+var intervalTime = 0; // time between each iteration in milliseconds, 0 = real time
 
 function runPathfinding(nodes) {
   // Make sure start and end exist
@@ -267,19 +267,15 @@ function visualiseCameFrom(latestNode) {
 
 
 function getDistance(node1, node2) {
-  // Return distance in manhattan measurement
+  // Returns distance in manhattan measurement
 
-  let [x1, y1] = node1.pos;
-  let [x2, y2] = node2.pos;
-  return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+  return Math.abs(node1.x - node2.x) + Math.abs(node1.y - node2.y);
 }
 
 function getEuclideanDistance(node1, node2) {
-  // Return distance in Euclidean measurement
-
-  let [x1, y1] = node1.pos;
-  let [x2, y2] = node2.pos;
-  return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+  // Returns distance in Euclidean measurement
+  
+  return Math.sqrt(Math.pow((node2.x - node1.x), 2) + Math.pow((node2.y - node1.y), 2));
 }
 
 
@@ -307,13 +303,15 @@ function changeAlgorithm() {
 
 // Create HTML table with all cells that represent nodes
 const HTMLTABLE = document.querySelector("table");
-width = window.innerWidth / 30;
-height = (window.innerHeight - 150) / 30; // minus nav height
+const SIZE = 20;
+
+let width = window.innerWidth / SIZE;
+let height = (window.innerHeight - 150) / SIZE; // minus nav height
 let HTMLCode;
 for (let y = 0; y < height; y++) {
   HTMLCode = "<tr>";
   for (let x = 0; x < width; x++) {
-    HTMLCode += `<td class='_${x}-${y}'></td>\n`;
+    HTMLCode += `<td class='_${x}-${y}' style='width: ${SIZE}px; height: ${SIZE}px'></td>\n`;
   }
   HTMLCode += "</tr>";
   HTMLTABLE.innerHTML += HTMLCode;
