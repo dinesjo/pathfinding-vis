@@ -108,14 +108,14 @@ nav button:hover {
   background-color: #006400;
 }
 
-.changeAlgorithmContainer {
+.change-algorithm-container {
   display: flex;
   flex-direction: column;
   height: 80px;
   width: 10%;
 }
 
-.changeAlgorithmContainer h2 {
+.change-algorithm-container h2 {
   font-size: 18px;
   padding-bottom: 4px;
   text-align: center;
@@ -133,7 +133,7 @@ main table {
 
 main td {
   background-color: #e8e8e8;
-  border: 1px solid #888;
+  border: 1px solid #aaa;
   user-select: none;
 }
 
@@ -177,7 +177,8 @@ main td:hover {
 }
 
 .wall {
-  background-color: #111111;
+  background-color: #444444;
+  border: 0;
 }
 
 footer {

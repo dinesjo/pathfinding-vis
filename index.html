@@ -20,11 +20,11 @@
       <h2>Hold SHIFT +  <img style="width: 18px;" src="imgs/mouse1.png"> to remove obstacles</h2>
     </div>
     <div class="button-container">
-      <button id="clear" onclick="location.reload();">Clear</button>
-      <button id="run" onclick="runPathfinding(nodes);">Run</button>
+      <button id="clear" onclick="handleClearButton();">Clear</button>
+      <button id="run" onclick="handleRunButton();">Run</button>
     </div>
 
-    <div class="changeAlgorithmContainer">
+    <div class="change-algorithm-container">
       <h2>Current algorithm:</h2>
       <button id="changeAlgorithm" onclick="changeAlgorithm();">Dijkstra's</button>
     </div>
