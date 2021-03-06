@@ -5,14 +5,10 @@ var startExists = false;
 var endExists = false;
 var hasBeenCleared = true;
 
-var strokeID = 0;
+var strokeID = 0; // used to avoid infinite switching of type
 var erasing = false;
 
-function handleMousemove(event) {
-  let c = event.target.classList[0].split("_").pop().split("-");
-  nodes[Number(c[0])][Number(c[1])].handleDraw(strokeID);
-}
-
+// LISTEN FOR MOUSEDOWN
 document.querySelector("table").addEventListener("mousedown", (event) => {
   strokeID++;
   if (event.shiftKey) {
@@ -20,13 +16,13 @@ document.querySelector("table").addEventListener("mousedown", (event) => {
     erasing = true;
     document.addEventListener("mousemove", handleMousemove);
   } else if (event.altKey) {
-    // Start / End
-    let c = event.target.classList[0].split("_").pop().split("-");
+    // Place START / END
+    let coords = event.target.classList[0].split("_").pop().split("-");
     if (!startExists) {
-      nodes[Number(c[0])][Number(c[1])].makeStart();
+      nodes[Number(coords[0])][Number(coords[1])].makeStart();
       startExists = true;
     } else if (!endExists) {
-      nodes[Number(c[0])][Number(c[1])].makeEnd();
+      nodes[Number(coords[0])][Number(coords[1])].makeEnd();
       endExists = true;
     }
   } else {
@@ -39,7 +35,18 @@ document.addEventListener("mouseup", () => {
   document.removeEventListener("mousemove", handleMousemove);
 });
 
+
+function handleMousemove(event) {
+  // Draw walls where mouse
+
+  let coords = event.target.classList[0].split("_").pop().split("-");
+  nodes[Number(coords[0])][Number(coords[1])].handleDraw(strokeID);
+}
+
 function handleClearButton() {
+  // Reset map without reloading
+  // Resets all properties of all nodes
+
   nodes.forEach(nodeRow => {
     nodeRow.forEach(node => {
       node.type = "normal";
@@ -59,7 +66,22 @@ function handleClearButton() {
 }
 
 function handleRunButton() {
-  runPathfinding(nodes);
+  // Runs pathfinding if first run, 
+  // Clear and rerun if already ran once
+
+  if (hasBeenCleared) {
+    runPathfinding(nodes);
+  } else {
+    nodes.forEach(nodeRow => {
+      nodeRow.forEach(node => {
+        node.nbrs = [];
+        node.usedStrokeIDs = [];
+        node.clearReRun();
+      });
+    });
+
+    runPathfinding(nodes);
+  }
 }
 
 
@@ -85,6 +107,16 @@ class Node {
   clearClasses() {
     while (document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.length > 1) {
       document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove(document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList[1]);
+    }
+  }
+
+  clearReRun() {
+    try {
+      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("considered");
+      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("visited");
+      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("tail");
+    } catch (error) {
+
     }
   }
 
@@ -131,6 +163,10 @@ class Node {
   }
 
   handleDraw(ID) {
+    // Make wall if drawing
+    // Make normal if erasing
+    // StrokeID to make use to not infinitely switch between types
+
     if (!(this.usedStrokeIDs.includes(ID))) {
       this.usedStrokeIDs.push(ID);
       if (erasing && this.type === "wall") {
@@ -142,6 +178,18 @@ class Node {
   }
 }
 
+function hasTwoCommonWalls(node1, node2) {
+  // Returns true if two nodes have at least two nbring walls in common
+
+  node1Walls = node1.nbrs.filter(node => node.type === "wall");
+  node2Walls = node2.nbrs.filter(node => node.type === "wall");
+  let arr = node1Walls.filter(el => node2Walls.includes(el));
+  if (arr.length > 1) {
+    return true;
+  }
+  return false;
+}
+
 
 function getAvailNodes(arr) {
   // Make list with ALL nodes
@@ -149,12 +197,13 @@ function getAvailNodes(arr) {
   arr.forEach(nodeRow => {
     nodeRow.forEach(node => {
       allNodesIncWalls.push(node);
-    })
-  })
+    });
+  });
+
   // Return list without walls
   return allNodesIncWalls.filter(node => {
     return node.type != "wall";
-  })
+  });
 }
 
 var openSet = [];
@@ -178,7 +227,6 @@ function runPathfinding(nodes) {
 
   openSet = [startNode];
   closedSet = [];
-  curNode = getLowestDistance(openSet);
 
   switch (selectedAlgorithm) {
     case "A*":
@@ -212,10 +260,15 @@ function runDijkstraOnce() {
 
       // fDistance represents distance to start in order to
       // still use getLowestDistance function
-      provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr) + getCross(nbr) * 0.001;
+      provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr) + getCross(nbr) * 0.0001;
       if (!(openSet.includes(nbr)) || (provisionalfDistance < nbr.fDistance)) {
-        nbr.cameFrom = curNode;
-        nbr.fDistance = provisionalfDistance;
+        if ((getDistance(curNode, nbr) != 1) && (hasTwoCommonWalls(curNode, nbr))) {
+          nbr.cameFrom = curNode;
+          nbr.fDistance = Infinity;
+        } else {
+          nbr.cameFrom = curNode;
+          nbr.fDistance = provisionalfDistance;
+        }
       }
       if (!(openSet.includes(nbr))) {
         openSet.push(nbr);
@@ -248,10 +301,23 @@ function runAstarOnce() {
 
       let provisionalgDistance = curNode.gDistance + getEuclideanDistance(curNode, nbr);
       if (!(openSet.includes(nbr)) || provisionalgDistance < nbr.gDistance) {
-        nbr.cameFrom = curNode;
-        nbr.gDistance = provisionalgDistance;
-        nbr.hDistance = getEuclideanDistance(nbr, endNode) + getCross(nbr) * 0.001;
-        nbr.fDistance = nbr.gDistance + nbr.hDistance;
+        if ((getDistance(curNode, nbr) != 1) && (hasTwoCommonWalls(curNode, nbr))) {
+          // Check if two diagonally connected nodes share two walls such that:
+          //  0 X 0 0
+          //  0 0 X 0
+          //            0 = node
+          //            X = wall
+
+          // Avoid the path slipping through gaps in the users drawn walls "unintentionally"
+
+          nbr.cameFrom = curNode;
+          nbr.fDistance = Infinity;
+        } else {
+          nbr.cameFrom = curNode;
+          nbr.gDistance = provisionalgDistance;
+          nbr.hDistance = getEuclideanDistance(nbr, endNode) + getCross(nbr) * 0.001;
+          nbr.fDistance = nbr.gDistance + nbr.hDistance;
+        }
         if (!(openSet.includes(nbr))) {
           openSet.push(nbr);
         }

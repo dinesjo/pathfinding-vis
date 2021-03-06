@@ -93,11 +93,11 @@ nav button {
   font-size: 18px;
   background-color: #222222;
   color: #f8f8f8;
+  cursor: pointer;
 }
 
 nav button:hover {
   box-shadow: inset 0 -6px 0 0 white;
-  cursor: pointer;
 }
 
 #clear {
@@ -157,28 +157,29 @@ main td:hover {
 }
 
 .considered {
-  background-color: #e0c60098;
+  background-color: #a8dadc;
 }
 
 .visited {
-  background-color: #00b3e062;
+  background-color: #cbeaeb;
 }
 
 .tail {
-  background-color: #3210ac;
+  background-color: #225a7c;
 }
 
 .start {
-  background-color: #007033;
+  background-color: darkgreen;
+  box-shadow: inset 0 0 2px 2px #fff;
 }
 
 .end {
-  background-color: #862323;
+  background-color: darkred;
+  box-shadow: inset 0 0 2px 2px #fff;
 }
 
 .wall {
   background-color: #444444;
-  border: 0;
 }
 
 footer {
