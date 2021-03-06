@@ -7,7 +7,6 @@
   font-family: "Open Sans", sans-serif;
   color: #e8e8e8;
   font-weight: 400; /* fallback */
-  font-weight: normal;
 }
 
 a {
@@ -54,11 +53,7 @@ nav h1 {
   width: 30%;
   text-align: center;
   padding: 0.2rem;
-  font-weight: 500;
-}
-
-.instructions-container span {
-  padding: 0 0.3rem;
+  font-weight: 300;
 }
 
 .instructions-container img {
@@ -69,7 +64,7 @@ nav h1 {
 
 .instructions-container .green {
   background-color: #007032d7;
-  font-weight: 600;
+  font-weight: 400;
   padding: 0 10px;
 }
 
