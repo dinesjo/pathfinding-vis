@@ -3,6 +3,7 @@ var startNode;
 var endNode;
 var startExists = false;
 var endExists = false;
+var running = false;
 
 
 class Node {
@@ -117,6 +118,7 @@ const INTERVALTIME = 0; // time between each iteration in milliseconds, 0 = clos
 
 function runPathfinding(nodes) {
   hasBeenCleared = false;
+  running = true;
   // Make sure start and end exist
   if (startNode == undefined || endNode == undefined) {
     alert("Select a start and an end node!");
@@ -152,6 +154,7 @@ function runDijkstraOnce() {
     // If ended, visualise with a tail
     clearInterval(intervalID);
     visualiseCameFrom(curNode);
+    running = false;
   }
 
   // Add curNode to closedSet and remove from openSet
@@ -164,7 +167,7 @@ function runDijkstraOnce() {
 
       // fDistance represents distance to start in order to
       // still use getLowestDistance function
-      provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr) + getCross(nbr) * 0.0001;
+      provisionalfDistance = curNode.fDistance + getEuclideanDistance(curNode, nbr) + getCross(nbr) * 0.00001; // break ties by favouring a straight line from START to END
       if (!(openSet.includes(nbr)) || (provisionalfDistance < nbr.fDistance)) {
         if ((getManhattanDistance(curNode, nbr) != 1) && (curNode.sharesTwoWallsWith(nbr))) {
           // Check if two diagonally connected nodes share two walls such that:
@@ -198,6 +201,7 @@ function runAstarOnce() {
   if (curNode === endNode) {
     clearInterval(intervalID); // stop loop
     visualiseCameFrom(curNode);
+    running = false;
   }
 
   // Add curNode to closedSet and remove from openSet
@@ -217,7 +221,7 @@ function runAstarOnce() {
         } else {
           nbr.cameFrom = curNode;
           nbr.gDistance = provisionalgDistance;
-          nbr.hDistance = getEuclideanDistance(nbr, endNode) + getCross(nbr) * 0.0001; // break ties by favouring a straight line from START to END
+          nbr.hDistance = getEuclideanDistance(nbr, endNode) + getCross(nbr) * 0.00001; // break ties by favouring a straight line from START to END
           nbr.fDistance = nbr.gDistance + nbr.hDistance;
         }
         if (!(openSet.includes(nbr))) {
@@ -275,7 +279,7 @@ function getEuclideanDistance(node1, node2) {
 
   let dx = Math.abs(node1.x - node2.x);
   let dy = Math.abs(node1.y - node2.y);
-  return (dx + dy) + (Math.sqrt(2) - 2) * Math.min(dx, dy);
+  return (dx + dy) + (1.41421356237 - 2) * Math.min(dx, dy);
 }
 
 function getCross(node) {
@@ -333,6 +337,10 @@ var hasBeenCleared = true;
 function handleClearButton() {
   // Reset map without reloading
   // Resets all properties of all nodes
+  if (running) {
+    clearInterval(intervalID); // stop loop
+    running = false;
+  }
 
   nodes.forEach(nodeRow => {
     nodeRow.forEach(node => {
@@ -355,19 +363,20 @@ function handleClearButton() {
 function handleRunButton() {
   // Runs pathfinding if first run, 
   // Clear and rerun if already ran once
-
-  if (hasBeenCleared) {
-    runPathfinding(nodes);
-  } else {
-    nodes.forEach(nodeRow => {
-      nodeRow.forEach(node => {
-        node.nbrs = [];
-        node.usedStrokeIDs = [];
-        node.clearReRun();
+  if (!running) {
+    if (hasBeenCleared) {
+      runPathfinding(nodes);
+    } else {
+      nodes.forEach(nodeRow => {
+        nodeRow.forEach(node => {
+          node.nbrs = [];
+          node.usedStrokeIDs = [];
+          node.clearReRun();
+        });
       });
-    });
 
-    runPathfinding(nodes);
+      runPathfinding(nodes);
+    }
   }
 }
 
@@ -390,7 +399,7 @@ document.querySelector("table").addEventListener("mousedown", (event) => {
     // Erase
     erasing = true;
     document.addEventListener("mousemove", handleMousemove);
-  } else if (event.altKey) {
+  } else if (event.ctrlKey) {
     // Place START / END
     let coords = event.target.classList[0].split("_").pop().split("-");
     if (!startExists) {
