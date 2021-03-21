@@ -119,11 +119,6 @@ const INTERVALTIME = 0; // time between each iteration in milliseconds, 0 = clos
 function runPathfinding(nodes) {
   hasBeenCleared = false;
   running = true;
-  // Make sure start and end exist
-  if (startNode == undefined || endNode == undefined) {
-    alert("Select a start and an end node!");
-    return;
-  }
 
   // Call setNbrs for all available nodes
   getAvailNodes(nodes).forEach(node => {
@@ -363,6 +358,12 @@ function handleClearButton() {
 function handleRunButton() {
   // Runs pathfinding if first run, 
   // Clear and rerun if already ran once
+  // Make sure start and end exist
+  if (startNode == undefined || endNode == undefined) {
+    alert("Select a start and an end node!");
+    return;
+  }
+
   if (!running) {
     if (hasBeenCleared) {
       runPathfinding(nodes);
