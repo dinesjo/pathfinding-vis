@@ -16,7 +16,7 @@ class Node {
     this.fDistance = Infinity;
     this.gDistance = Infinity;
     this.hDistance = Infinity;
-    this.cameFrom = undefined; // coords for use in pathfinding
+    this.cameFrom = undefined;
     this.usedStrokeIDs = [];
   }
 
@@ -31,13 +31,15 @@ class Node {
     }
   }
 
-  clearReRun() {
-    try {
-      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("considered");
-      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("visited");
-      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("tail");
-    } catch (error) {
+  clearCSS() {
+    if (this.cameFrom != undefined) {
+      try {
+        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("considered");
+        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("visited");
+        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("tail");
+      } catch (error) {
 
+      }
     }
   }
 
@@ -121,7 +123,7 @@ function runPathfinding(nodes) {
   running = true;
 
   // Call setNbrs for all available nodes
-  getAvailNodes(nodes).forEach(node => {
+  getNonWallNodes(nodes).forEach(node => {
     node.setNbrs();
   });
 
@@ -145,11 +147,17 @@ function runPathfinding(nodes) {
 function runDijkstraOnce() {
   curNode = getLowestDistance(openSet);
 
+  // END
   if (curNode === endNode) {
-    // If ended, visualise with a tail
-    clearInterval(intervalID);
+    clearInterval(intervalID); // stop loop
     visualiseCameFrom(curNode);
     running = false;
+  } else if (curNode === undefined) {
+    // End if path can't be found
+    clearInterval(intervalID);
+    running = false;
+    alert("A path between the two objectives could not be found. Ensure there is a route available and try again.");
+    return;
   }
 
   // Add curNode to closedSet and remove from openSet
@@ -192,11 +200,17 @@ function runDijkstraOnce() {
 function runAstarOnce() {
   curNode = getLowestDistance(openSet);
 
-  // If end found
+  // END
   if (curNode === endNode) {
     clearInterval(intervalID); // stop loop
     visualiseCameFrom(curNode);
     running = false;
+  } else if (curNode === undefined) {
+    // End if path can't be found
+    clearInterval(intervalID);
+    running = false;
+    alert("A path between the two objectives could not be found. Ensure there is a route available and try again.");
+    return;
   }
 
   // Add curNode to closedSet and remove from openSet
@@ -205,10 +219,10 @@ function runAstarOnce() {
 
   // Update all nbrs distance
   curNode.nbrs.forEach(nbr => {
-    if (!closedSet.includes(nbr)) { // if not already visited
+    if (!(closedSet.includes(nbr))) { // if not already visited
 
       let provisionalgDistance = curNode.gDistance + getEuclideanDistance(curNode, nbr);
-      if (!(openSet.includes(nbr)) || provisionalgDistance < nbr.gDistance) {
+      if (!(openSet.includes(nbr)) || (provisionalgDistance < nbr.gDistance)) {
         if ((getManhattanDistance(curNode, nbr) != 1) && (curNode.sharesTwoWallsWith(nbr))) {
           // Avoid going through diagonal gaps, see equivalent for Dijkstra's
           nbr.cameFrom = curNode;
@@ -233,8 +247,8 @@ function runAstarOnce() {
 
 
 
-// GET ALL NODES
-function getAvailNodes(arr) {
+// GET NON-WALL NODES
+function getNonWallNodes(arr) {
   // Make list with ALL nodes
   let allNodesIncWalls = [];
   arr.forEach(nodeRow => {
@@ -251,7 +265,8 @@ function getAvailNodes(arr) {
 
 // DISTANCES
 function getLowestDistance(arr) {
-  // Returns node with lowest f-distance from array (set)
+  // Returns node with lowest f-distance from array (set),
+  // if distance is infinite, return undefined
 
   let lowestyet = arr[0];
   arr.forEach(node => {
@@ -259,6 +274,10 @@ function getLowestDistance(arr) {
       lowestyet = node;
     }
   });
+
+  if (lowestyet === undefined || lowestyet.fDistance === Infinity) {
+    return undefined;
+  }
 
   return lowestyet;
 }
@@ -290,14 +309,23 @@ function getCross(node) {
 
 
 // VISUALISE TAIL
+
+var workingNode;
+var intervalID2
+
 function visualiseCameFrom(latestNode) {
-  // Visualise a tail from end to finish with CSS
+  // Visualise a tail from end to finish
+  workingNode = latestNode;
 
-  let workingNode = latestNode;
+  intervalID2 = setInterval(visualiseCameFromIteration, 7);
+}
 
-  while (workingNode != startNode) {
+function visualiseCameFromIteration() {
+  if (workingNode != startNode) {
     workingNode.addClass("tail");
     workingNode = workingNode.cameFrom;
+  } else {
+    clearInterval(intervalID2);
   }
 }
 
@@ -320,7 +348,6 @@ function changeAlgorithm() {
       break;
   }
   // Update display
-  document.querySelectorAll("button")[2].innerHTML = selectedAlgorithm;
   curAlgorithm.innerHTML = selectedAlgorithm;
 }
 
@@ -329,9 +356,8 @@ function changeAlgorithm() {
 // HANDLE CLEAR / RUN BUTTONS
 var hasBeenCleared = true;
 
-function handleClearButton() {
-  // Reset map without reloading
-  // Resets all properties of all nodes
+function handleClearWallsButton() {
+  // Reset walls
   if (running) {
     clearInterval(intervalID); // stop loop
     running = false;
@@ -348,20 +374,58 @@ function handleClearButton() {
       node.clearClasses();
     });
   });
+
+  if (endNode) { // if objectives exist
+    startNode.makeStart();
+    endNode.makeEnd();
+  }
+  hasBeenCleared = true;
+}
+
+function handleClearObjectivesButton() {
+  // Reset objective-nodes
+  if (running) {
+    clearInterval(intervalID); // stop loop
+    running = false;
+  }
+
+  [startNode, endNode].forEach(node => {
+    node.type = "normal";
+    node.fDistance = Infinity;
+    node.gDistance = Infinity;
+    node.hDistance = Infinity;
+    node.nbrs = [];
+    node.clearClasses();
+  });
+
+  // let nonWalls = getNonWallNodes(nodes);
+
+  // console.log(nonWalls);
+
+  getNonWallNodes(nodes).forEach(node => {
+    node.clearCSS();
+  })
+
   startExists = false;
   endExists = false;
   startNode = undefined;
   endNode = undefined;
-  hasBeenCleared = true;
+  // hasBeenCleared = true;
 }
 
 function handleRunButton() {
   // Runs pathfinding if first run, 
-  // Clear and rerun if already ran once
-  // Make sure start and end exist
+  // Clear and rerun if already ran once,
+  // Restart if already running
   if (startNode == undefined || endNode == undefined) {
+    // Make sure start and end exist
     alert("Select a start and an end node!");
     return;
+  }
+
+  if (running) {
+    clearInterval(intervalID); // stop loop
+    running = false;
   }
 
   if (!running) {
@@ -371,8 +435,7 @@ function handleRunButton() {
       nodes.forEach(nodeRow => {
         nodeRow.forEach(node => {
           node.nbrs = [];
-          node.usedStrokeIDs = [];
-          node.clearReRun();
+          node.clearCSS();
         });
       });
 
@@ -383,21 +446,22 @@ function handleRunButton() {
 
 
 
-// HANDLE MOUSE CLICKS
-var strokeID = 0; // used to avoid infinite switching of type
+// HANDLE MOUSE EVENTS
+var strokeID = 0; // increments to avoid infinite switching of type
 var erasing = false;
 
 function handleMousemove(event) {
-  // Draw walls where mouse
+  // Draw walls where mouse is
 
   let coords = event.target.classList[0].split("_").pop().split("-");
   nodes[Number(coords[0])][Number(coords[1])].handleDraw(strokeID);
 }
 
 document.querySelector("table").addEventListener("mousedown", (event) => {
+  // Listen for mousedown BEFORE listening for mousemove to reduce bkgd-processes.
   strokeID++;
   if (event.shiftKey) {
-    // Erase
+    // Erase-mode
     erasing = true;
     document.addEventListener("mousemove", handleMousemove);
   } else if (event.ctrlKey) {
@@ -411,7 +475,7 @@ document.querySelector("table").addEventListener("mousedown", (event) => {
       endExists = true;
     }
   } else {
-    // Draw Walls
+    // Draw-mode
     erasing = false;
     document.addEventListener("mousemove", handleMousemove);
   }
@@ -424,7 +488,7 @@ document.addEventListener("mouseup", () => {
 
 // Create HTML table with all cells that represent nodes
 const HTMLTABLE = document.querySelector("table");
-const SIZE = 20;
+const SIZE = 20; // side-length of each cell, lower = higher resolution & slower run-time
 
 const WIDTH = window.innerWidth / SIZE;
 const HEIGHT = (window.innerHeight - 100) / SIZE; // minus menu heights

@@ -63,7 +63,7 @@ nav h1 {
 }
 
 .instructions-container .green {
-  background-color: #007032d7;
+  background-color: #006400d7;
   font-weight: 400;
   padding: 0 10px;
 }
@@ -76,14 +76,14 @@ nav h1 {
 
 .button-container {
   display: flex;
-  width: 15%;
-  justify-content: space-evenly;
+  width: 21%;
+  justify-content: space-between;
 }
 
 nav button {
   transition: all 300ms ease;
   font-weight: 500;
-  padding: 16px 2rem;
+  padding: 16px 1rem;
   border: 0;
   font-size: 18px;
   background-color: #222222;
@@ -95,12 +95,16 @@ nav button:hover {
   box-shadow: inset 0 -6px 0 0 white;
 }
 
-#clear {
+#clearWalls {
   background-color: #00000077;
 }
 
+#clearObjectives {
+  background: linear-gradient(135deg, #862323ad 0 50%, #006400c2 50% 100%);
+}
+
 #run {
-  background-color: #006400;
+  background-color: #173cb4;
 }
 
 .change-algorithm-container {
