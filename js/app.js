@@ -332,7 +332,7 @@ function visualiseCameFromIteration() {
 
 
 // HANDLE WHICH ALGORIM USED
-var selectedAlgorithm = "Dijkstra's";
+var selectedAlgorithm = "A*";
 
 function changeAlgorithm() {
   // Change algorithm and refresh display
