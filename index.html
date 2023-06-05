@@ -10,32 +10,43 @@
 
 <body>
   <nav>
+    <div class="accessibility-container">
+      <h3>Colorblind?</h3>
+      <button id="toggleColorblind" onclick="toggleColorblind();">Off</button>
+    </div>
+    <div class="cell-size-container">
+      <h3>Cell Size:</h3>
+      <div class="cell-size-buttons-container">
+        <button id="decreaseCellSize" onclick="table.decreaseCellSize();">-</button>
+        <button id="increaseCellSize" onclick="table.increaseCellSize();">+</button>
+      </div>
+    </div>
     <div class="title-container">
       <h1>Pathfinding Visualised</h1>
     </div>
     <div class="instructions-container">
       <h2>CTRL + <img style="width: 18px;" src="imgs/mouse1.png"> to place <br><span class="green">START</span> & <span
           class="red">END</span></h2>
-      <h2>Hold <img style="width: 18px;" src="imgs/mouse1.png"> to <br>add obstacles</h2>
-      <h2>SHIFT + Hold <img style="width: 18px;" src="imgs/mouse1.png"> to remove obstacles</h2>
+      <h2>Hold <img style="width: 18px;" src="imgs/mouse1.png"> to <br>add walls</h2>
+      <h2>SHIFT + Hold <img style="width: 18px;" src="imgs/mouse1.png"> to remove walls</h2>
     </div>
     <div class="button-container">
       <button id="clearWalls" onclick="handleClearWallsButton();">Clear Walls</button>
-      <button id="clearObjectives" onclick="handleClearObjectivesButton();">Clear Objectives</button>
+      <button id="clearObjectives" onclick="handleClearObjectivesButton();">Clear START/END</button>
       <button id="run" onclick="handleRunButton();">Run</button>
     </div>
 
     <div class="change-algorithm-container">
-      <h2>Current algorithm:</h2>
+      <h2>Current Algorithm:</h2>
       <button id="changeAlgorithm" onclick="changeAlgorithm();">A*</button>
     </div>
 
   </nav>
   <main>
     <table></table>
-
   </main>
   <script src="js/app.js"></script>
+  <script src="js/colorblind.js"></script>
 </body>
 
 </html>
