@@ -12,6 +12,8 @@ function toggleColorblind() {
     // apply colorblind mode
     cbButton.innerText = "On";
     cbButton.style.backgroundColor = "deeppink";
+    cbButton.style.fontSize = "1.2em";
+    cbButton.style.fontWeight = "bold";
     clearObj.classList.add("cb");
     greens[0].classList.add("cb");
     reds[0].classList.add("cb");
@@ -25,6 +27,8 @@ function toggleColorblind() {
     // Reset to default
     cbButton.innerText = "Off";
     cbButton.style.backgroundColor = defaultCbButtonBGColor;
+    cbButton.style.fontSize = "1em";
+    cbButton.style.fontWeight = "normal";
     clearObj.classList.remove("cb");
     greens[0].classList.remove("cb");
     reds[0].classList.remove("cb");

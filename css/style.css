@@ -74,7 +74,8 @@ nav .accessibility-container {
   width: 75%;
   height: 45%;
   padding: 0 8px;
-  font-size: small;
+  font-size: medium;
+  font-weight: 400;
 }
 
 nav .title-container {
@@ -101,17 +102,15 @@ nav h1 {
 
 .instructions-container h2 {
   background-color: #ffffff22;
-  height: 80%;
   width: 30%;
   text-align: center;
-  padding: 0.2rem;
-  font-weight: 300;
+  padding: 0.4rem;
+  font-weight: 500;
 }
 
 .instructions-container img {
-  margin: 0 4px;
-  position: relative;
-  top: 5px;
+  width: 36px;
+  height: 36px;
 }
 
 .green {
@@ -119,7 +118,8 @@ nav h1 {
   font-weight: 400;
   padding: 0 10px;
 }
-.green.cb{
+
+.green.cb {
   background-color: green;
 }
 
@@ -128,6 +128,7 @@ nav h1 {
   font-weight: 400;
   padding: 0 10px;
 }
+
 .red.cb {
   background-color: deeppink;
 }
@@ -141,7 +142,7 @@ nav h1 {
 nav button {
   justify-content: center;
   align-items: center;
-  transition: all 300ms ease;
+  transition: all 150ms ease;
   font-weight: 500;
   padding: 16px 1rem;
   border: 0;
@@ -151,24 +152,32 @@ nav button {
   cursor: pointer;
 }
 
-nav button:hover {
-  box-shadow: inset 0 -6px 0 0 white;
-}
-
-#clearWalls {
+#clearWalls:not(:hover) {
   background-color: #00000077;
+  box-shadow: inset 0 0 0 2px #666;
 }
 
 #clearObjectives {
-  background: linear-gradient(135deg, darkred 0 50%, darkgreen 50% 100%);
+  background: linear-gradient(135deg, darkgreen 0 50%, darkred 50% 100%);
+}
+
+#clearObjectives:not(:hover) {
+  box-shadow: inset 0 0 0 2px orange;
 }
 
 #clearObjectives.cb {
-  background: linear-gradient(135deg, deeppink 0 50%, green 50% 100%);
+  background: linear-gradient(135deg, green 0 50%, deeppink 50% 100%);
 }
 
 #run {
-  background-color: #173cb4;
+  background-color: #225a7c;
+}
+#run:not(:hover) {
+  box-shadow: inset 0 0 0 2px #222;
+}
+
+nav button:hover {
+  box-shadow: inset 0 -6px 0 0 #eee;
 }
 
 .change-algorithm-container {
@@ -192,8 +201,13 @@ nav button:hover {
   font-size: 22px;
 }
 
+#changeAlgorithm:not(:hover) {
+  box-shadow: inset 0 0 0 2px #225a7c;
+}
+
 main table {
-  border-collapse: collapse; /* avoid double borders */
+  border-collapse: collapse;
+  /* avoid double borders */
 }
 
 main td {
@@ -222,61 +236,48 @@ main td:hover {
 
 .start {
   background-color: darkgreen;
-  box-shadow: inset 0 0 2px 2px #fff;
+  box-shadow: inset 0 0 6px .2em lightgreen;
 }
+
 .start.cb {
   background-color: green;
 }
 
 .end {
   background-color: darkred;
-  box-shadow: inset 0 0 2px 2px #fff;
+  box-shadow: inset 0 0 6px .2em red;
 }
+
 .end.cb {
   background-color: deeppink;
+  box-shadow: inset 0 0 6px .2em #ff76bf;
 }
 
 .wall {
   background-color: #444444;
-}
-
-footer {
-  width: 100%;
-  height: 36px;
-  background-color: #485665;
-  padding-left: 0.5rem;
-}
-
-footer h2 {
-  font-size: 22px;
-  display: inline-block;
-}
-
-.NTIGradient {
-  background: linear-gradient(45deg, #a96fd6 0, #cc75ab 100%);
-  background-clip: inherit;
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-}
-
-.NTIGradient a {
-  font-weight: bold;
+  -webkit-box-shadow: inset 0px 0px 0px 5px #666;
+  -moz-box-shadow: inset 0px 0px 0px 5px #666;
+  box-shadow: inset 0px 0px 0px 5px #666;
 }
 
 @media only screen and (max-width: 1300px) {
   nav h1 {
     font-size: 22px;
   }
+
   .instructions-container h2 {
     font-size: 16px;
     line-height: 1.2em;
   }
+
   .instructions-container img {
     height: 20px;
   }
+
   .button-container {
     width: 10%;
   }
+
   .button-container button {
     width: 40%;
     text-align: center;

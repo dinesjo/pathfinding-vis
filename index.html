@@ -25,10 +25,10 @@
       <h1>Pathfinding Visualised</h1>
     </div>
     <div class="instructions-container">
-      <h2>CTRL + <img style="width: 18px;" src="imgs/mouse1.png"> to place <br><span class="green">START</span> & <span
+      <h2><img src="imgs/right-click.png"> to place <br><span class="green">START</span> & <span
           class="red">END</span></h2>
-      <h2>Hold <img style="width: 18px;" src="imgs/mouse1.png"> to <br>add walls</h2>
-      <h2>SHIFT + Hold <img style="width: 18px;" src="imgs/mouse1.png"> to remove walls</h2>
+      <h2>Hold <img src="imgs/left-click.png"> to <br>draw walls</h2>
+      <h2>SHIFT + <img src="imgs/left-click.png"> to erase walls</h2>
     </div>
     <div class="button-container">
       <button id="clearWalls" onclick="handleClearWallsButton();">Clear Walls</button>
@@ -45,8 +45,10 @@
   <main>
     <table></table>
   </main>
-  <script src="js/app.js"></script>
+  <script src="js/Node.js"></script>
   <script src="js/colorblind.js"></script>
+  <script src="js/table.js"></script>
+  <script src="js/app.js"></script>
 </body>
 
 </html>

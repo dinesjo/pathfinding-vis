@@ -5,107 +5,6 @@ var startExists = false;
 var endExists = false;
 var running = false;
 
-
-class Node {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.pos = [this.x, this.y];
-    this.type = "normal"; // normal, wall, start, end
-    this.nbrs = []; // nbring nodes
-    this.fDistance = Infinity;
-    this.gDistance = Infinity;
-    this.hDistance = Infinity;
-    this.cameFrom = undefined;
-    this.usedStrokeIDs = [];
-  }
-
-  addClass(c) {
-    document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.add(c);
-  }
-
-  clearClasses() {
-    while (document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.length > 1) {
-      document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove(document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList[1]);
-    }
-  }
-
-  clearVisualisation() {
-    if (this.cameFrom != undefined) {
-      try {
-        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("considered");
-        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("visited");
-        document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("tail");
-      } catch (error) { }
-    }
-  }
-
-  makeStart() {
-    startNode = this;
-    this.type = "start";
-    this.fDistance = 0; // start at lowest distance
-    this.gDistance = 0;
-    this.hDistance = 0;
-    this.addClass("start");
-    if (cb) {this.addClass("cb");}
-  }
-  
-  makeEnd() {
-    endNode = this;
-    this.type = "end";
-    this.addClass("end");
-    if (cb) {this.addClass("cb");}
-  }
-
-  makeWall() {
-    this.type = "wall";
-    this.addClass("wall");
-  }
-
-  makeNormal() {
-    this.type = "normal";
-    document.getElementsByClassName(`_${this.x}-${this.y}`)[0].classList.remove("wall");
-  }
-
-  setNbrs() {
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        if (!(i === 0 && j === 0)) {
-          try {
-            this.nbrs.push(nodes[this.x + i][this.y + j]);
-          } catch (TypeError) { } // Ignore instances where attempt to make nbr outside of table
-        }
-      }
-    }
-    this.nbrs = this.nbrs.filter(nbr => nbr !== undefined); // remove "ghost" nbrs
-  }
-
-  handleDraw(ID) {
-    // Make wall if drawing, make normal if erasing
-    // StrokeID to make use to not infinitely switch between types
-    if (!(this.usedStrokeIDs.includes(ID))) {
-      this.usedStrokeIDs.push(ID);
-      if (erasing && this.type === "wall") {
-        this.makeNormal();
-      } else if (!erasing) {
-        this.makeWall();
-      }
-    }
-  }
-
-  sharesTwoWallsWith(node) {
-    // Returns true if this node shares two walls with argument node
-    let thisWallNbrs = this.nbrs.filter(node => node.type === "wall");
-    let otherWallNbrs = node.nbrs.filter(node => node.type === "wall");
-    let arr = thisWallNbrs.filter(wall => otherWallNbrs.includes(wall));
-
-    return (arr.length > 1);
-  }
-}
-
-
-
-
 var openSet = [];
 var closedSet = [];
 var curNode;
@@ -116,9 +15,9 @@ function runPathfinding(nodes) {
   hasBeenCleared = false;
   running = true;
 
-  // Call setNbrs for all available nodes
+  // Call setupNbrs for all available nodes
   getNonWallNodes(nodes).forEach(node => {
-    node.setNbrs();
+    node.setupNbrs();
   });
 
   openSet = [startNode];
@@ -350,12 +249,12 @@ function changeAlgorithm() {
 var hasBeenCleared = true;
 
 function handleClearWallsButton() {
-  // Reset walls
   if (running) {
     clearInterval(intervalID); // stop loop
     running = false;
   }
-
+  
+  // Reset walls
   nodes.forEach(nodeRow => {
     nodeRow.forEach(node => {
       node.type = "normal";
@@ -363,15 +262,15 @@ function handleClearWallsButton() {
       node.gDistance = Infinity;
       node.hDistance = Infinity;
       node.nbrs = [];
-      node.usedStrokeIDs = [];
       node.clearClasses();
     });
   });
-  
-  if (endNode) { // if objectives exist
+
+  // Try to reinstate objectives
+  try {
     startNode.makeStart();
     endNode.makeEnd();
-  }
+  } catch (TypeError) { } // catch if startNode or endNode is undefined
   hasBeenCleared = true;
 }
 
@@ -381,7 +280,7 @@ function handleClearObjectivesButton() {
     clearInterval(intervalID);
     running = false;
   }
-  
+
   // Reset objectives
   try {
     [startNode, endNode].forEach(node => {
@@ -390,7 +289,6 @@ function handleClearObjectivesButton() {
       node.gDistance = Infinity;
       node.hDistance = Infinity;
       node.nbrs = [];
-      node.usedStrokeIDs = [];
       node.clearClasses();
     });
   } catch (TypeError) { } // catch if startNode or endNode is undefined
@@ -437,121 +335,4 @@ function handleRunButton() {
   }
 }
 
-
-
-// HANDLE MOUSE EVENTS
-var strokeID = 0; // ID that increments to avoid infinite switching of erasing
-var erasing = false;
-
-function handleMousemove(event) {
-  // Draw walls where mouse is
-  let coords = event.target.classList[0].split("_").pop().split("-");
-  nodes[Number(coords[0])][Number(coords[1])].handleDraw(strokeID);
-}
-
-class Table {
-  // Class for the table
-  cellSize = 40;
-  cellSizeChangeAmount = 10;
-
-  constructor() {
-    this.table = document.querySelector("table");
-    this.setUpMouseListeners();
-    this.setUpTable();
-  }
-
-  addRow() {
-    // Add a row to the table
-    let newRow = document.createElement("tr");
-    this.table.appendChild(newRow);
-  }
-
-  addCell() {
-    // Add a cell to the last row
-    let lastRow = this.table.lastChild;
-    let newCell = document.createElement("td");
-    newCell.style.width = `${this.cellSize}px`;
-    newCell.style.height = `${this.cellSize}px`;
-    newCell.classList.add(`_${lastRow.rowIndex}-${lastRow.childElementCount}`);
-    lastRow.appendChild(newCell);
-  }
-
-  setUpTable() {
-    // Populate table with cells
-    let width = Math.floor(window.innerWidth / this.cellSize);
-    let height = Math.floor((window.innerHeight - document.getElementsByTagName('nav')[0].offsetHeight) / this.cellSize);
-
-    for (let i = 0; i < height; i++) {
-      this.addRow();
-      for (let j = 0; j < width; j++) {
-        this.addCell();
-      }
-    }
-
-    // Populate nodes array with nodes
-    nodes = [];
-    for (let i = 0; i < height; i++) {
-      nodes.push([]);
-      for (let j = 0; j < width; j++) {
-        nodes[i].push(new Node(i, j));
-      }
-    }
-  }
-
-  clearTable() {
-    // Clear HTML table and nodes array
-    handleClearObjectivesButton();
-    handleClearWallsButton();
-    this.table.innerHTML = "";
-    nodes = [];    
-  }
-
-  setUpMouseListeners() {
-    // Set up mouse listeners for the table
-    this.table.addEventListener("mousedown", (event) => {
-      // Listen for mousedown BEFORE listening for mousemove to reduce bkgd-processes.
-      strokeID++;
-      if (event.shiftKey) {
-        // Erase-mode
-        erasing = true;
-        document.addEventListener("mousemove", handleMousemove);
-      } else if (event.ctrlKey) {
-        // Place START / END
-        let coords = event.target.classList[0].split("_").pop().split("-");
-        if (!startExists) {
-          nodes[Number(coords[0])][Number(coords[1])].makeStart();
-          startExists = true;
-        } else if (!endExists) {
-          nodes[Number(coords[0])][Number(coords[1])].makeEnd();
-          endExists = true;
-        }
-      } else {
-        // Draw-mode
-        erasing = false;
-        document.addEventListener("mousemove", handleMousemove);
-      }
-    });
-
-    this.table.addEventListener("mouseup", (_) => {
-      // Stop listening for mousemove (performance)
-      document.removeEventListener("mousemove", handleMousemove);
-    });
-  }
-
-  increaseCellSize() {
-    if (this.cellSize < 100) {
-      this.cellSize += this.cellSizeChangeAmount;
-    }
-    this.clearTable();
-    this.setUpTable();
-  }
-  
-  decreaseCellSize() {
-    if (this.cellSize > 20) {
-      this.cellSize -= this.cellSizeChangeAmount;
-    }
-    this.clearTable();
-    this.setUpTable();
-  }
-}
 let table = new Table();
